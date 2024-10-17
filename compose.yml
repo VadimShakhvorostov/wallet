@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16.1
+    container_name: wallet-postgres
+    ports:
+      - "8088:5432"
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=walletdb
+      - POSTGRES_USER=walletuser
+      - POSTGRES_PASSWORD=12345
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    image: wallet-image
+    container_name: wallet-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
